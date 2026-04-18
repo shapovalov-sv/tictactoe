@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Крестики-нолики</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #F8FAFC;
+      font-family: system-ui, sans-serif;
+      padding: 24px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #0F172A;
+      margin-bottom: 8px;
+    }
+
+    .scores {
+      display: flex;
+      gap: 32px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .score-x { color: #2563EB; }
+    .score-o { color: #64748B; }
+
+    .status {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: #0F172A;
+      margin-bottom: 20px;
+      padding: 8px 20px;
+      border-radius: 10px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .status.win  { background: #2563EB; color: #fff; }
+    .status.draw { background: #64748B; color: #fff; }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 96px);
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .cell {
+      width: 96px;
+      height: 96px;
+      font-size: 2.5rem;
+      font-weight: 700;
+      border: 2px solid #E2E8F0;
+      border-radius: 12px;
+      background: #fff;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, transform 0.15s;
+    }
+    .cell:hover:not(.taken) {
+      border-color: #2563EB;
+      background: #F0F7FF;
+    }
+    .cell.x     { color: #2563EB; }
+    .cell.o     { color: #0EA5E9; }
+    .cell.win   { border-color: #2563EB; background: #EFF6FF; transform: scale(1.07); }
+    .cell.taken { cursor: default; }
+
+    .buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    button.primary {
+      padding: 10px 22px;
+      background: #2563EB;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    button.primary:hover { background: #1D4ED8; }
+
+    button.secondary {
+      padding: 10px 22px;
+      background: transparent;
+      color: #2563EB;
+      font-size: 1rem;
+      font-weight: 600;
+      border: 2px solid #2563EB;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    button.secondary:hover { background: #EFF6FF; }
+  </style>
+</head>
+<body>
+
+  <h1>Крестики-нолики</h1>
+
+  <div class="scores">
+    <span class="score-x">Вы (X): <span id="sx">0</span></span>
+    <span class="score-o">Комп (O): <span id="so">0</span></span>
+  </div>
+
+  <div class="status" id="status">Ваш ход</div>
+
+  <div class="board" id="board"></div>
+
+  <div class="buttons">
+    <button class="primary"   onclick="newGame()">Новая игра</button>
+    <button class="secondary" onclick="resetAll()">Сбросить счёт</button>
+  </div>
+
+  <script>
+    const LINES = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+
+    let board = Array(9).fill(null);
+    let scores = { X: 0, O: 0 };
+    let gameOver = false;
+    let playerTurn = true; // игрок = X, комп = O
+
+    function getWinner(b) {
+      for (const [a, c, d] of LINES) {
+        if (b[a] && b[a] === b[c] && b[a] === b[d])
+          return { winner: b[a], line: [a, c, d] };
+      }
+      return null;
+    }
+
+    // Minimax — компьютер играет оптимально
+    function minimax(b, isMaximizing) {
+      const result = getWinner(b);
+      if (result) return result.winner === 'O' ? 10 : -10;
+      if (b.every(Boolean)) return 0;
+
+      if (isMaximizing) {
+        let best = -Infinity;
+        for (let i = 0; i < 9; i++) {
+          if (!b[i]) {
+            b[i] = 'O';
+            best = Math.max(best, minimax(b, false));
+            b[i] = null;
+          }
+        }
+        return best;
+      } else {
+        let best = Infinity;
+        for (let i = 0; i < 9; i++) {
+          if (!b[i]) {
+            b[i] = 'X';
+            best = Math.min(best, minimax(b, true));
+            b[i] = null;
+          }
+        }
+        return best;
+      }
+    }
+
+    function bestMove() {
+      let best = -Infinity, move = -1;
+      for (let i = 0; i < 9; i++) {
+        if (!board[i]) {
+          board[i] = 'O';
+          const score = minimax(board, false);
+          board[i] = null;
+          if (score > best) { best = score; move = i; }
+        }
+      }
+      return move;
+    }
+
+    function checkEnd() {
+      const result = getWinner(board);
+      if (result) { scores[result.winner]++; gameOver = true; }
+      else if (board.every(Boolean)) { gameOver = true; }
+    }
+
+    function render() {
+      const boardEl = document.getElementById('board');
+      boardEl.innerHTML = '';
+      const result = getWinner(board);
+      const isDraw = !result && board.every(Boolean);
+
+      board.forEach((cell, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'cell' +
+          (cell ? ` ${cell.toLowerCase()} taken` : '') +
+          (result && result.line.includes(i) ? ' win' : '');
+        btn.textContent = cell || '';
+        btn.onclick = () => handleClick(i);
+        boardEl.appendChild(btn);
+      });
+
+      const statusEl = document.getElementById('status');
+      if (result) {
+        statusEl.textContent = result.winner === 'X' ? 'Вы победили!' : 'Компьютер победил!';
+        statusEl.className = 'status win';
+      } else if (isDraw) {
+        statusEl.textContent = 'Ничья!';
+        statusEl.className = 'status draw';
+      } else {
+        statusEl.textContent = playerTurn ? 'Ваш ход' : 'Компьютер думает…';
+        statusEl.className = 'status';
+      }
+
+      document.getElementById('sx').textContent = scores.X;
+      document.getElementById('so').textContent = scores.O;
+    }
+
+    function handleClick(i) {
+      if (board[i] || gameOver || !playerTurn) return;
+      board[i] = 'X';
+      playerTurn = false;
+      checkEnd();
+      render();
+
+      if (!gameOver) {
+        setTimeout(() => {
+          board[bestMove()] = 'O';
+          playerTurn = true;
+          checkEnd();
+          render();
+        }, 300);
+      }
+    }
+
+    function newGame() {
+      board = Array(9).fill(null);
+      playerTurn = true;
+      gameOver = false;
+      render();
+    }
+
+    function resetAll() {
+      scores = { X: 0, O: 0 };
+      newGame();
+    }
+
+    render();
+  </script>
+</body>
+</html>
