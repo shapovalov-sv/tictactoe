@@ -167,7 +167,7 @@
   .spark { display: flex; align-items: flex-end; gap: 3px; height: 34px; cursor: default; }
   .spark-bar {
     width: 11px; border-radius: 3px 3px 0 0; min-height: 3px; flex-shrink: 0;
-    transition: filter 0.12s, transform 0.12s; cursor: crosshair;
+    transition: filter 0.12s, transform 0.12s; cursor: default;
     transform-origin: bottom center;
   }
   .spark-bar:hover { filter: brightness(1.5); transform: scaleY(1.12); }
@@ -183,8 +183,8 @@
   }
   #sparkTip.visible { opacity: 1; }
   #sparkTip .tip-period {
-    font-size: 11px; color: #7a9ab5; text-transform: uppercase;
-    letter-spacing: 1px; margin-bottom: 6px;
+    font-size: 17px; font-weight: 700; color: #c8a84b;
+    letter-spacing: 0.5px; margin-bottom: 6px;
   }
   #sparkTip .tip-amount {
     font-size: 24px; font-weight: 700; color: #e0e6f0;
