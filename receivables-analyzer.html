@@ -165,13 +165,19 @@
 
   /* Sparkline */
   .spark { display: flex; align-items: flex-end; gap: 3px; height: 34px; cursor: default; }
-  .spark-bar {
-    width: 11px; border-radius: 3px 3px 0 0; min-height: 3px; flex-shrink: 0;
-    transition: filter 0.12s, transform 0.12s; cursor: default;
-    transform-origin: bottom center;
+  /* Full-height column = full hover zone, even above the visible bar */
+  .spark-col {
+    width: 11px; height: 34px; flex-shrink: 0;
+    display: flex; align-items: flex-end;
   }
-  .spark-bar:hover { filter: brightness(1.5); transform: scaleY(1.12); }
-  .spark-bar.zero-bar { opacity: 0.15; }
+  .spark-col.zero-col { opacity: 0.15; }
+  .spark-bar-vis {
+    width: 100%; border-radius: 3px 3px 0 0; min-height: 3px;
+    transition: filter 0.12s, transform 0.12s;
+    transform-origin: bottom center;
+    pointer-events: none;
+  }
+  .spark-col:hover .spark-bar-vis { filter: brightness(1.5); transform: scaleY(1.12); }
 
   /* Spark tooltip */
   #sparkTip {
@@ -863,23 +869,25 @@ function buildSpark(row) {
 
   const bars = amounts.map((v, i) => {
     const h = Math.max(3, Math.round(v / max * 30));
-    const cls = v === 0 ? ' zero-bar' : '';
+    const zeroCls = v === 0 ? ' zero-col' : '';
     const sn = sortedSheetNames[i] || '';
-    // title = browser fallback tooltip (always works)
-    return `<div class="spark-bar${cls}" style="height:${h}px;background:${col}"
-      data-sid="${sid}" data-i="${i}" title="${esc(sn)}: ${fmtAmt(v)} ₽"></div>`;
+    // .spark-col is full container height → hover works even above visible bar
+    return `<div class="spark-col${zeroCls}" data-sid="${sid}" data-i="${i}" title="${esc(sn)}: ${fmtAmt(v)} ₽">
+      <div class="spark-bar-vis" style="height:${h}px;background:${col}"></div>
+    </div>`;
   });
   return `<div class="spark">${bars.join('')}</div>`;
 }
 
-// Event delegation — no inline handlers, no escaping problems
+// Event delegation — full-height column captures hover above the visible bar
 document.addEventListener('mouseover', e => {
-  const bar = e.target;
-  if (!bar.classList.contains('spark-bar')) return;
-  showSparkTip(e, +bar.dataset.sid, +bar.dataset.i);
+  const col = e.target.closest('.spark-col');
+  if (!col) return;
+  showSparkTip(e, +col.dataset.sid, +col.dataset.i);
 });
 document.addEventListener('mouseout', e => {
-  if (!e.target.classList.contains('spark-bar')) return;
+  const col = e.target.closest('.spark-col');
+  if (!col || col.contains(e.relatedTarget)) return;
   hideSparkTip();
 });
 
