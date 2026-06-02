@@ -405,6 +405,7 @@
 let allSheets = {};
 let sheetDates = {};
 let sortedSheetNames = [];
+let sheetKeyMaps = {};       // name -> Map(key -> first matching row) — O(1) lookups
 let tableData = [];
 let filteredData = [];
 let currentView = 'all';
@@ -462,7 +463,7 @@ function resetUpload() {
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('fileInfoBar').style.display = 'none';
   document.getElementById('fileInput').value = '';
-  allSheets = {}; sheetDates = {}; sortedSheetNames = [];
+  allSheets = {}; sheetDates = {}; sortedSheetNames = []; sheetKeyMaps = {};
   tableData = []; filteredData = [];
   if (pieInst) { pieInst.destroy(); pieInst = null; }
   if (barInst) { barInst.destroy(); barInst = null; }
@@ -511,6 +512,18 @@ function parseWorkbook(wb, fileName) {
   if (!sortedSheetNames.length)
     sortedSheetNames = Object.keys(sheetDates).sort((a, b) => sheetDates[a] - sheetDates[b]);
   if (!sortedSheetNames.length) { alert('Не найдены листы с датами. Ожидаются имена вида "ДЗ 01.06.26".'); return; }
+
+  // Precompute key -> row lookup per sheet (first match wins, like .find).
+  // Turns repeated O(N) scans into O(1) lookups across the whole analysis.
+  sheetKeyMaps = {};
+  for (const sn of sortedSheetNames) {
+    const m = new Map();
+    for (const r of (allSheets[sn] || [])) {
+      const k = buildKey(r);
+      if (!m.has(k)) m.set(k, r);
+    }
+    sheetKeyMaps[sn] = m;
+  }
 
   const latestSheet = sortedSheetNames[sortedSheetNames.length - 1];
   tableData = buildTableData(latestSheet);
@@ -594,7 +607,7 @@ function traceHistory(key, latestSheetName) {
 
   for (const sn of sortedSheetNames) {
     if (sheetDates[sn] > latestDate) break;
-    const found = (allSheets[sn] || []).find(r => buildKey(r) === key);
+    const found = sheetKeyMaps[sn] ? sheetKeyMaps[sn].get(key) : undefined;
     amounts.push(found ? found.amount : 0);
     dates.push(sheetDates[sn]);
   }
@@ -639,7 +652,9 @@ function calcRisk(h) {
 // =====================================================================
 // GLOBAL ANOMALY MAPS (computed once per file load)
 // =====================================================================
-function buildGlobalAnomalyMaps(latestSheetName, rows) {
+// `enriched` carries each row with its already-computed history, so we never
+// recompute traceHistory here (it was the main quadratic hot-spot).
+function buildGlobalAnomalyMaps(rows, enriched) {
   // MULTI_ORG: same INN in 3+ orgs in latest sheet
   const innOrgs = {};
   for (const r of rows) {
@@ -665,12 +680,10 @@ function buildGlobalAnomalyMaps(latestSheetName, rows) {
   // EXEC_MONOPOLY: executor with >30% of never-zero total amount
   const execNeverZeroAmt = {};
   let totalNeverZero = 0;
-  for (const r of rows) {
-    const key  = buildKey(r);
-    const hist = traceHistory(key, latestSheetName);
-    if (hist.neverZero && r.amount > 0) {
-      execNeverZeroAmt[r.exec] = (execNeverZeroAmt[r.exec] || 0) + r.amount;
-      totalNeverZero += r.amount;
+  for (const { row, hist } of enriched) {
+    if (hist.neverZero && row.amount > 0) {
+      execNeverZeroAmt[row.exec] = (execNeverZeroAmt[row.exec] || 0) + row.amount;
+      totalNeverZero += row.amount;
     }
   }
   const monopolyExecs = new Set(
@@ -704,7 +717,7 @@ function detectAnomalies(row, hist, risk, key, globalMaps) {
   if (risk >= 2) {
     const execs = new Set();
     for (const sn of sortedSheetNames) {
-      const found = (allSheets[sn] || []).find(r => buildKey(r) === key);
+      const found = sheetKeyMaps[sn] ? sheetKeyMaps[sn].get(key) : undefined;
       if (found && found.amount > 0 && found.exec) execs.add(found.exec.trim().toLowerCase());
     }
     if (execs.size === 1 && row.exec) flags.push('EXCL_EXEC');
@@ -728,15 +741,18 @@ function detectAnomalies(row, hist, risk, key, globalMaps) {
     }
   }
 
-  // CYCLE — went 0 then came back to ≥80% of previous peak within 1-2 periods
+  // CYCLE — a real debt dropped to 0, then returned to ≥80% of its prior peak
+  // within 1-2 periods. prevPeak must be > 0, otherwise a counterparty that was
+  // simply absent in early periods (leading zeros) would falsely match.
   for (let i = 1; i < amounts.length; i++) {
     if (amounts[i] === 0) {
       const prevPeak = Math.max(...amounts.slice(0, i));
-      // Check next 1-2 periods
-      for (let j = i + 1; j <= Math.min(i + 2, amounts.length - 1); j++) {
-        if (amounts[j] >= 0.8 * prevPeak) { flags.push('CYCLE'); break; }
+      if (prevPeak > 0) {
+        for (let j = i + 1; j <= Math.min(i + 2, amounts.length - 1); j++) {
+          if (amounts[j] >= 0.8 * prevPeak) { flags.push('CYCLE'); break; }
+        }
+        if (flags.includes('CYCLE')) break;
       }
-      if (flags.includes('CYCLE')) break;
     }
   }
 
@@ -756,12 +772,19 @@ function detectAnomalies(row, hist, risk, key, globalMaps) {
 // =====================================================================
 function buildTableData(sheetName) {
   const rows = allSheets[sheetName] || [];
-  const globalMaps = buildGlobalAnomalyMaps(sheetName, rows);
 
-  return rows.map(row => {
-    const key      = buildKey(row);
-    const hist     = traceHistory(key, sheetName);
-    const risk     = calcRisk(hist);
+  // Pass 1: compute history + risk once per row.
+  const enriched = rows.map(row => {
+    const key  = buildKey(row);
+    const hist = traceHistory(key, sheetName);
+    return { row, key, hist, risk: calcRisk(hist) };
+  });
+
+  // Pass 2: global maps reuse the histories from pass 1.
+  const globalMaps = buildGlobalAnomalyMaps(rows, enriched);
+
+  // Pass 3: per-row anomaly flags.
+  return enriched.map(({ row, key, hist, risk }) => {
     const anomalies = detectAnomalies(row, hist, risk, key, globalMaps);
     return { ...row, key, ...hist, risk, anomalies, anomalyCount: anomalies.length };
   });
@@ -988,6 +1011,11 @@ const TREND_LABEL = {
 };
 
 function renderTable() {
+  // Reset sparkline cache each render — only the visible page needs entries,
+  // otherwise sparkData would grow without bound across filters/sorts/pages.
+  for (const k in sparkData) delete sparkData[k];
+  sparkSeq = 0;
+
   const start = (currentPage - 1) * pageSize;
   const slice = filteredData.slice(start, start + pageSize);
   const search = document.getElementById('fSearch').value.toLowerCase();
