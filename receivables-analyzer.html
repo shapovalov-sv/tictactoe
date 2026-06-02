@@ -13,8 +13,7 @@
   header {
     background: linear-gradient(135deg, #1a2a3a 0%, #0d1f2d 100%);
     border-bottom: 2px solid #c8a84b;
-    padding: 16px 24px;
-    display: flex; align-items: center; gap: 16px;
+    padding: 16px 24px; display: flex; align-items: center; gap: 16px;
   }
   header .logo { font-size: 22px; font-weight: 700; color: #c8a84b; letter-spacing: 1px; }
   header .subtitle { font-size: 13px; color: #7a9ab5; }
@@ -44,7 +43,6 @@
     margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #1e3045;
   }
 
-  /* File info */
   #fileInfoBar {
     background: #0d1923; border: 1px solid #1e3045; border-radius: 8px;
     padding: 10px 16px; margin-bottom: 20px; display: none;
@@ -55,7 +53,6 @@
   #fileInfoBar .fi-change { margin-left: auto; color: #4a7a9b; cursor: pointer; text-decoration: underline; font-size: 12px; }
   #fileInfoBar .fi-change:hover { color: #c8a84b; }
 
-  /* Callout box — explains the logic */
   .callout {
     background: #0d1923; border-left: 3px solid #c8a84b;
     border-radius: 0 8px 8px 0; padding: 12px 16px;
@@ -64,7 +61,7 @@
   .callout strong { color: #e0e6f0; }
 
   /* View tabs */
-  .view-tabs { display: flex; gap: 0; margin-bottom: 20px; border-radius: 8px; overflow: hidden; border: 1px solid #2a4a6a; width: fit-content; }
+  .view-tabs { display: flex; gap: 0; margin-bottom: 20px; border-radius: 8px; overflow: hidden; border: 1px solid #2a4a6a; width: fit-content; flex-wrap: wrap; }
   .view-tab {
     padding: 9px 20px; font-size: 13px; font-weight: 600; cursor: pointer;
     background: #111e2a; color: #7a9ab5; border: none; transition: all 0.2s;
@@ -73,11 +70,13 @@
   .view-tab:last-child { border-right: none; }
   .view-tab:hover { background: #1a2d3f; color: #e0e6f0; }
   .view-tab.active { background: #c8a84b22; color: #c8a84b; }
+  .view-tab.tab-anomaly.active { background: #ef444420; color: #ef4444; }
   .view-tab .cnt {
     display: inline-block; background: #1e3045; border-radius: 10px;
     padding: 1px 7px; font-size: 11px; margin-left: 6px;
   }
   .view-tab.active .cnt { background: #c8a84b33; }
+  .view-tab.tab-anomaly.active .cnt { background: #ef444430; }
 
   /* Cards */
   .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px; }
@@ -90,9 +89,12 @@
   .card.c-long::before  { background: #f97316; }
   .card.c-grow::before  { background: #eab308; }
   .card.c-ok::before    { background: #22c55e; }
+  .card.c-anom-h::before { background: #ef4444; }
+  .card.c-anom-m::before { background: #eab308; }
   .card .label { font-size: 11px; color: #7a9ab5; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
   .card .amount { font-size: 19px; font-weight: 700; color: #e0e6f0; margin-bottom: 4px; }
   .card .count { font-size: 12px; color: #4a7a9b; }
+  .card .desc  { font-size: 11px; color: #3a5a7a; margin-top: 4px; line-height: 1.4; }
   .card .pct-bar { height: 3px; background: #1e3045; border-radius: 2px; margin-top: 10px; }
   .card .pct-fill { height: 3px; border-radius: 2px; }
 
@@ -122,8 +124,6 @@
   .btn-primary:hover { background: #e0bf5a; }
   .btn-ghost { background: #1e3045; color: #7a9ab5; border: 1px solid #2a4a6a; }
   .btn-ghost:hover { background: #2a4a6a; color: #e0e6f0; }
-  .btn-danger { background: #ef444420; color: #ef4444; border: 1px solid #ef444440; }
-  .btn-danger:hover { background: #ef444430; }
   .btn-sm { padding: 5px 12px; font-size: 12px; }
 
   /* Table */
@@ -159,25 +159,29 @@
   .risk-medium   { background: #eab30822; color: #eab308; border: 1px solid #eab30844; }
   .risk-low      { background: #22c55e22; color: #22c55e; border: 1px solid #22c55e44; }
 
+  /* Anomaly badges */
+  .anom-wrap { display: flex; flex-wrap: wrap; gap: 3px; max-width: 180px; }
+  .anom-badge {
+    display: inline-block; padding: 2px 6px; border-radius: 6px;
+    font-size: 10px; font-weight: 700; white-space: nowrap; cursor: default;
+  }
+  .anom-high   { background: #ef444418; color: #ef4444; border: 1px solid #ef444440; }
+  .anom-medium { background: #eab30818; color: #eab308; border: 1px solid #eab30840; }
+
   /* Trend */
-  .trend-up    { color: #ef4444; font-weight: 700; }
-  .trend-down  { color: #22c55e; font-weight: 700; }
-  .trend-flat  { color: #eab308; }
-  .trend-vol   { color: #7a9ab5; }
+  .trend-up  { color: #ef4444; font-weight: 700; }
+  .trend-down{ color: #22c55e; font-weight: 700; }
+  .trend-flat{ color: #eab308; }
+  .trend-vol { color: #7a9ab5; }
 
   /* Sparkline */
   .spark { display: flex; align-items: flex-end; gap: 3px; height: 34px; cursor: default; }
-  /* Full-height column = full hover zone, even above the visible bar */
-  .spark-col {
-    width: 11px; height: 34px; flex-shrink: 0;
-    display: flex; align-items: flex-end;
-  }
+  .spark-col { width: 11px; height: 34px; flex-shrink: 0; display: flex; align-items: flex-end; }
   .spark-col.zero-col { opacity: 0.15; }
   .spark-bar-vis {
     width: 100%; border-radius: 3px 3px 0 0; min-height: 3px;
     transition: filter 0.12s, transform 0.12s;
-    transform-origin: bottom center;
-    pointer-events: none;
+    transform-origin: bottom center; pointer-events: none;
   }
   .spark-col:hover .spark-bar-vis { filter: brightness(1.5); transform: scaleY(1.12); }
 
@@ -190,17 +194,9 @@
     box-shadow: 0 12px 40px #00000099;
   }
   #sparkTip.visible { opacity: 1; }
-  #sparkTip .tip-period {
-    font-size: 17px; font-weight: 700; color: #c8a84b;
-    letter-spacing: 0.5px; margin-bottom: 6px;
-  }
-  #sparkTip .tip-amount {
-    font-size: 24px; font-weight: 700; color: #e0e6f0;
-    font-variant-numeric: tabular-nums; line-height: 1.1; margin-bottom: 10px;
-  }
-  #sparkTip .tip-delta {
-    font-size: 15px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
-  }
+  #sparkTip .tip-period { font-size: 17px; font-weight: 700; color: #c8a84b; letter-spacing: 0.5px; margin-bottom: 6px; }
+  #sparkTip .tip-amount { font-size: 24px; font-weight: 700; color: #e0e6f0; font-variant-numeric: tabular-nums; line-height: 1.1; margin-bottom: 10px; }
+  #sparkTip .tip-delta  { font-size: 15px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
   #sparkTip .tip-delta.up   { color: #ef4444; }
   #sparkTip .tip-delta.down { color: #22c55e; }
   #sparkTip .tip-delta.flat { color: #7a9ab5; }
@@ -208,14 +204,13 @@
   #sparkTip .tip-delta.new  { color: #f97316; }
   #sparkTip .tip-divider { border: none; border-top: 1px solid #1e3045; margin: 10px 0; }
   #sparkTip .tip-mini { display: flex; align-items: flex-end; gap: 3px; height: 28px; margin-bottom: 6px; }
-  #sparkTip .tip-mini-bar { border-radius: 2px 2px 0 0; min-height: 2px; flex-shrink: 0; transition: filter 0.1s; }
+  #sparkTip .tip-mini-bar { border-radius: 2px 2px 0 0; min-height: 2px; flex-shrink: 0; }
   #sparkTip .tip-mini-bar.active { outline: 2px solid #fff; outline-offset: 1px; filter: brightness(1.3); }
   #sparkTip .tip-foot { font-size: 11px; color: #4a7a9b; text-align: center; }
 
-  .org-tag { font-size: 11px; color: #4a7a9b; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .name-main { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .org-tag  { font-size: 11px; color: #4a7a9b; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .name-main{ max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .inn-text { font-family: monospace; font-size: 12px; color: #7a9ab5; }
-
   .never-flag {
     display: inline-block; background: #ef444412; border: 1px solid #ef444430;
     color: #ef4444; font-size: 10px; font-weight: 700; padding: 1px 5px;
@@ -243,7 +238,7 @@
 <header>
   <div>
     <div class="logo">&#9679; ДЗ Анализатор</div>
-    <div class="subtitle">Выявление невозвратной дебиторской задолженности &mdash; Служба безопасности</div>
+    <div class="subtitle">Выявление невозвратной задолженности и аномалий &mdash; Служба безопасности</div>
   </div>
   <div class="badge">ЛОКАЛЬНЫЙ РЕЖИМ</div>
 </header>
@@ -273,23 +268,29 @@
   <div id="dashboard">
 
     <div class="callout">
-      <strong>Логика выявления невозвратной задолженности:</strong><br>
+      <strong>Логика выявления невозвратной задолженности:</strong>
       Если контрагент хотя бы один раз обнулил долг — это <em>текущая дебиторка</em> (норма).
-      Если долг <strong>ни разу не обнулялся</strong> за весь период наблюдения — это <strong>потенциально невозвратная задолженность</strong>.
-      Срок считается от <em>самого раннего листа</em>, где контрагент появился без предшествующего нуля.
+      Если долг <strong>ни разу не обнулялся</strong> — потенциально невозвратная задолженность.
+      Вкладка <strong>«Аномалии СБ»</strong> выявляет признаки противоправных действий сотрудников.
     </div>
 
-    <!-- View selector -->
     <div class="view-tabs">
-      <button class="view-tab active" id="tab-all"      onclick="setView('all')">     Все контрагенты <span class="cnt" id="cnt-all">0</span></button>
-      <button class="view-tab"        id="tab-problem"  onclick="setView('problem')"> &#9888; Подозрительные <span class="cnt" id="cnt-problem">0</span></button>
-      <button class="view-tab"        id="tab-never"    onclick="setView('never')">   &#128308; Ни разу не гасили <span class="cnt" id="cnt-never">0</span></button>
-      <button class="view-tab"        id="tab-ok"       onclick="setView('ok')">      &#9989; Текущая дебиторка <span class="cnt" id="cnt-ok">0</span></button>
+      <button class="view-tab active" id="tab-all"     onclick="setView('all')">Все контрагенты <span class="cnt" id="cnt-all">0</span></button>
+      <button class="view-tab"        id="tab-problem" onclick="setView('problem')">&#9888; Подозрительные <span class="cnt" id="cnt-problem">0</span></button>
+      <button class="view-tab"        id="tab-never"   onclick="setView('never')">&#128308; Ни разу не гасили <span class="cnt" id="cnt-never">0</span></button>
+      <button class="view-tab"        id="tab-ok"      onclick="setView('ok')">&#9989; Текущая дебиторка <span class="cnt" id="cnt-ok">0</span></button>
+      <button class="view-tab tab-anomaly" id="tab-anomaly" onclick="setView('anomaly')">&#9888;&#65039; Аномалии СБ <span class="cnt" id="cnt-anomaly">0</span></button>
     </div>
 
     <!-- Summary cards -->
-    <div class="section-title">Сводка</div>
+    <div class="section-title" id="cardsSectionTitle">Сводка</div>
     <div class="cards-grid" id="cardsGrid"></div>
+
+    <!-- Anomaly type breakdown (shown only in anomaly view) -->
+    <div id="anomalySection" style="display:none">
+      <div class="section-title">Аномалии по типам</div>
+      <div class="cards-grid" id="anomalyCardsGrid"></div>
+    </div>
 
     <!-- Charts -->
     <div class="charts-row">
@@ -298,7 +299,7 @@
         <canvas id="pieChart"></canvas>
       </div>
       <div class="chart-box chart-tall">
-        <div class="section-title">ТОП-15 подозрительных контрагентов</div>
+        <div class="section-title" id="barChartTitle">ТОП-15 подозрительных контрагентов</div>
         <canvas id="barChart"></canvas>
       </div>
     </div>
@@ -325,6 +326,21 @@
           <option value="down">Снижается ↓</option>
           <option value="flat">Стоит на месте</option>
           <option value="volatile">Волатильная</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Тип аномалии</label>
+        <select id="fAnomaly" onchange="applyFilters()">
+          <option value="">Все</option>
+          <option value="EXCL_EXEC">Сговор с контрагентом</option>
+          <option value="EXEC_MONOPOLY">Монополия исполнителя</option>
+          <option value="FROZEN">Заморозка суммы</option>
+          <option value="CYCLE">Цикличное погашение</option>
+          <option value="JUMP">Аномальный скачок</option>
+          <option value="ROUND">Круглые суммы</option>
+          <option value="MULTI_ORG">Один ИНН — много орг.</option>
+          <option value="NO_INN">Нет / некорректный ИНН</option>
+          <option value="NAME_CHANGE">Смена наименования</option>
         </select>
       </div>
       <div class="filter-group">
@@ -357,6 +373,7 @@
               <th onclick="sortBy('inn')">ИНН</th>
               <th onclick="sortBy('amount')" class="th-amount">Сумма ДЗ</th>
               <th onclick="sortBy('risk')" class="th-risk">Риск</th>
+              <th onclick="sortBy('anomalyCount')" class="th-anomalyCount" style="color:#ef4444">Аномалии СБ</th>
               <th onclick="sortBy('continuousDays')" class="th-days">Непрерывно дней</th>
               <th>Динамика по периодам</th>
               <th onclick="sortBy('trend')" class="th-trend">Тренд</th>
@@ -372,7 +389,6 @@
   </div>
 </div>
 
-<!-- Sparkline tooltip -->
 <div id="sparkTip">
   <div class="tip-period" id="tipPeriod"></div>
   <div class="tip-amount" id="tipAmount"></div>
@@ -386,10 +402,10 @@
 // =====================================================================
 // STATE
 // =====================================================================
-let allSheets = {};          // name -> [{org,name,inn,amount,exec}]
-let sheetDates = {};         // name -> Date
-let sortedSheetNames = [];   // oldest->newest (data sheets)
-let tableData = [];          // all processed rows
+let allSheets = {};
+let sheetDates = {};
+let sortedSheetNames = [];
+let tableData = [];
 let filteredData = [];
 let currentView = 'all';
 let sortCol = 'risk';
@@ -402,15 +418,36 @@ let pieInst = null, barInst = null;
 // RISK LEVELS
 // =====================================================================
 const RISK = [
-  { key: 3, label: 'Критический', cls: 'risk-critical', color: '#ef4444',
-    desc: 'Никогда не гасили, долг растёт или стоит',      sort: 3 },
-  { key: 2, label: 'Высокий',    cls: 'risk-high',     color: '#f97316',
-    desc: 'Никогда не гасили, более 3 месяцев',            sort: 2 },
-  { key: 1, label: 'Средний',    cls: 'risk-medium',   color: '#eab308',
-    desc: 'Задолженность долго не гасится, но был ноль',   sort: 1 },
-  { key: 0, label: 'Текущая',    cls: 'risk-low',      color: '#22c55e',
-    desc: 'Нормальная оборотная задолженность',            sort: 0 },
+  { key: 3, label: 'Критический', cls: 'risk-critical', color: '#ef4444' },
+  { key: 2, label: 'Высокий',     cls: 'risk-high',     color: '#f97316' },
+  { key: 1, label: 'Средний',     cls: 'risk-medium',   color: '#eab308' },
+  { key: 0, label: 'Текущая',     cls: 'risk-low',      color: '#22c55e' },
 ];
+
+// =====================================================================
+// ANOMALY DEFINITIONS
+// =====================================================================
+const ANOMALY_DEFS = [
+  { code: 'EXCL_EXEC',     label: 'Сговор',         severity: 'high',
+    desc: 'Один исполнитель ведёт этого контрагента на всём периоде без ротации — признак сговора' },
+  { code: 'EXEC_MONOPOLY', label: 'Монополия',       severity: 'high',
+    desc: 'Исполнитель концентрирует >30% суммы всей невозвратной ДЗ — аномальная нагрузка' },
+  { code: 'FROZEN',        label: 'Заморозка',       severity: 'high',
+    desc: 'Сумма не изменилась ни на копейку в 3+ периодах подряд — долг намеренно игнорируется' },
+  { code: 'CYCLE',         label: 'Цикл',            severity: 'medium',
+    desc: 'Долг обнулялся и вернулся на 80%+ от прежнего уровня — возможно фиктивное погашение' },
+  { code: 'JUMP',          label: 'Скачок',          severity: 'medium',
+    desc: 'Сумма выросла более чем на 100% за один период — аномальный рост' },
+  { code: 'ROUND',         label: 'Круглые',         severity: 'medium',
+    desc: 'Все суммы кратны 100 000 без копеек — признак нереальных/договорных сумм' },
+  { code: 'MULTI_ORG',     label: 'Мн. орг.',        severity: 'high',
+    desc: 'Один ИНН в 3+ организациях одновременно — признак аффилированного контрагента' },
+  { code: 'NO_INN',        label: 'Нет ИНН',         severity: 'medium',
+    desc: 'ИНН отсутствует или некорректной длины — возможное намеренное сокрытие' },
+  { code: 'NAME_CHANGE',   label: 'Смена имени',     severity: 'medium',
+    desc: 'Один ИНН встречается под разными наименованиями в разных периодах' },
+];
+const ANOMALY_MAP = Object.fromEntries(ANOMALY_DEFS.map(d => [d.code, d]));
 
 // =====================================================================
 // FILE HANDLING
@@ -471,26 +508,22 @@ function parseWorkbook(wb, fileName) {
   sortedSheetNames = Object.keys(sheetDates)
     .filter(n => isDataSheet(n))
     .sort((a, b) => sheetDates[a] - sheetDates[b]);
-
-  if (!sortedSheetNames.length) {
+  if (!sortedSheetNames.length)
     sortedSheetNames = Object.keys(sheetDates).sort((a, b) => sheetDates[a] - sheetDates[b]);
-  }
   if (!sortedSheetNames.length) { alert('Не найдены листы с датами. Ожидаются имена вида "ДЗ 01.06.26".'); return; }
 
   const latestSheet = sortedSheetNames[sortedSheetNames.length - 1];
   tableData = buildTableData(latestSheet);
 
-  const fib = document.getElementById('fileInfoBar');
-  fib.style.display = 'flex';
+  document.getElementById('fileInfoBar').style.display = 'flex';
   document.getElementById('fiName').textContent = fileName;
   document.getElementById('fiInfo').textContent =
     `Листов-периодов: ${sortedSheetNames.length} | ` +
     `Период: ${fmtDate(sheetDates[sortedSheetNames[0]])} — ${fmtDate(sheetDates[latestSheet])} | ` +
-    `Контрагентов в последнем периоде: ${tableData.length}`;
+    `Контрагентов: ${tableData.length}`;
 
   document.getElementById('uploadZone').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
-
   populateFilters();
   updateViewCounts();
   setView('all');
@@ -499,8 +532,7 @@ function parseWorkbook(wb, fileName) {
 function parseSheet(ws) {
   if (!ws['!ref']) return [];
   const range = XLSX.utils.decode_range(ws['!ref']);
-  const rows = [];
-  let colMap = {};
+  const rows = [], colMap = {};
   let headerRow = -1;
 
   for (let r = range.s.r; r <= Math.min(range.e.r, 12); r++) {
@@ -531,9 +563,9 @@ function parseSheet(ws) {
       if (!cell) return '';
       return cell.t === 'n' ? cell.v : String(cell.v || '').trim();
     };
-    const org  = String(g(colMap.org) || '').trim();
+    const org  = String(g(colMap.org)  || '').trim();
     const name = String(g(colMap.name) || '').trim();
-    const inn  = String(g(colMap.inn) || '').trim();
+    const inn  = String(g(colMap.inn)  || '').trim();
     const exec = String(g(colMap.exec) || '').trim();
     const amt  = parseAmt(g(colMap.amount));
     if (!name && !org) continue;
@@ -545,7 +577,7 @@ function parseSheet(ws) {
 function parseAmt(v) {
   if (!v && v !== 0) return 0;
   if (typeof v === 'number') return v;
-  return parseFloat(String(v).replace(/\s/g,'').replace(',','.')) || 0;
+  return parseFloat(String(v).replace(/\s/g, '').replace(',', '.')) || 0;
 }
 
 // =====================================================================
@@ -556,75 +588,167 @@ function buildKey(row) {
   return (row.org + '|' + (inn || row.name)).toLowerCase().trim();
 }
 
-// For each debtor key in the latest sheet, trace history across all sorted sheets.
-// Returns { amounts: [], sheets: [], continuousDays, hadZero, neverZero, lastZeroSheet, lastZeroDate }
 function traceHistory(key, latestSheetName) {
   const latestDate = sheetDates[latestSheetName];
-  const amounts = [];   // parallel to sortedSheetNames
-  const dates   = [];
+  const amounts = [], dates = [];
 
   for (const sn of sortedSheetNames) {
     if (sheetDates[sn] > latestDate) break;
-    const rows = allSheets[sn] || [];
-    const found = rows.find(r => buildKey(r) === key);
+    const found = (allSheets[sn] || []).find(r => buildKey(r) === key);
     amounts.push(found ? found.amount : 0);
     dates.push(sheetDates[sn]);
   }
 
-  // Find the last index where amount was 0 (debtor absent or zero)
-  // "Debt start" = the sheet AFTER the last zero
   let lastZeroIdx = -1;
-  for (let i = amounts.length - 2; i >= 0; i--) {   // don't check last (current)
+  for (let i = amounts.length - 2; i >= 0; i--) {
     if (amounts[i] === 0) { lastZeroIdx = i; break; }
   }
 
-  // Continuous days = from first non-zero after lastZeroIdx to now
-  const startIdx = lastZeroIdx + 1;  // if -1 then 0 = very first sheet
+  const startIdx = lastZeroIdx + 1;
   const startDate = dates[startIdx] || latestDate;
   const continuousDays = Math.round((latestDate - startDate) / 86400000);
+  const hadZero   = lastZeroIdx >= 0;
+  const neverZero = !hadZero && amounts[0] > 0;
+  const trend     = calcTrend(amounts.slice(startIdx));
 
-  const hadZero  = lastZeroIdx >= 0;
-  const neverZero = !hadZero && amounts[0] > 0; // present from start and never zero
-
-  // Trend: look at amounts from startIdx to end
-  const window = amounts.slice(startIdx);
-  const trend  = calcTrend(window);
-
-  return {
-    amounts,
-    dates,
-    continuousDays,
-    hadZero,
-    neverZero,
-    trend,
-    startDate,
-  };
+  return { amounts, dates, continuousDays, hadZero, neverZero, trend, startDate };
 }
 
 function calcTrend(arr) {
-  const nonzero = arr.filter(v => v > 0);
-  if (nonzero.length < 2) return 'flat';
-  const first = nonzero[0], last = nonzero[nonzero.length - 1];
-  const pct = (last - first) / first;
+  const nz = arr.filter(v => v > 0);
+  if (nz.length < 2) return 'flat';
+  const pct = (nz[nz.length - 1] - nz[0]) / nz[0];
   if (pct > 0.05)  return 'up';
   if (pct < -0.05) return 'down';
-  // Check if amounts barely moved
-  const max = Math.max(...nonzero), min = Math.min(...nonzero);
+  const max = Math.max(...nz), min = Math.min(...nz);
   if ((max - min) / max < 0.05) return 'flat';
   return 'volatile';
 }
 
-function calcRisk(h, amount) {
+function calcRisk(h) {
   if (!h.hadZero) {
-    // Never had zero
-    if ((h.trend === 'up' || h.trend === 'flat') && h.continuousDays > 60) return 3; // critical
-    if (h.continuousDays > 90) return 3; // critical
-    return 2; // high
+    if ((h.trend === 'up' || h.trend === 'flat') && h.continuousDays > 60) return 3;
+    if (h.continuousDays > 90) return 3;
+    return 2;
   }
-  // Had zero at some point — but still sitting for a while now
-  if (h.continuousDays > 90 && h.trend !== 'down') return 1; // medium
+  if (h.continuousDays > 90 && h.trend !== 'down') return 1;
   if (h.continuousDays > 180) return 1;
-  return 0; // ok / normal
+  return 0;
+}
+
+// =====================================================================
+// GLOBAL ANOMALY MAPS (computed once per file load)
+// =====================================================================
+function buildGlobalAnomalyMaps(latestSheetName, rows) {
+  // MULTI_ORG: same INN in 3+ orgs in latest sheet
+  const innOrgs = {};
+  for (const r of rows) {
+    if (r.inn && r.inn.length >= 10) {
+      if (!innOrgs[r.inn]) innOrgs[r.inn] = new Set();
+      innOrgs[r.inn].add(r.org);
+    }
+  }
+  const multiOrgInns = new Set(Object.entries(innOrgs).filter(([, s]) => s.size >= 3).map(([k]) => k));
+
+  // NAME_CHANGE: same INN, different names across ALL periods
+  const innNames = {};
+  for (const sn of sortedSheetNames) {
+    for (const r of (allSheets[sn] || [])) {
+      if (r.inn && r.inn.length >= 10 && r.name) {
+        if (!innNames[r.inn]) innNames[r.inn] = new Set();
+        innNames[r.inn].add(r.name.toLowerCase().trim());
+      }
+    }
+  }
+  const nameChangeInns = new Set(Object.entries(innNames).filter(([, s]) => s.size >= 2).map(([k]) => k));
+
+  // EXEC_MONOPOLY: executor with >30% of never-zero total amount
+  const execNeverZeroAmt = {};
+  let totalNeverZero = 0;
+  for (const r of rows) {
+    const key  = buildKey(r);
+    const hist = traceHistory(key, latestSheetName);
+    if (hist.neverZero && r.amount > 0) {
+      execNeverZeroAmt[r.exec] = (execNeverZeroAmt[r.exec] || 0) + r.amount;
+      totalNeverZero += r.amount;
+    }
+  }
+  const monopolyExecs = new Set(
+    Object.entries(execNeverZeroAmt)
+      .filter(([, v]) => totalNeverZero > 0 && v / totalNeverZero > 0.30)
+      .map(([k]) => k)
+  );
+
+  return { multiOrgInns, nameChangeInns, monopolyExecs };
+}
+
+// =====================================================================
+// ANOMALY DETECTION PER ROW
+// =====================================================================
+function detectAnomalies(row, hist, risk, key, globalMaps) {
+  const { amounts, neverZero } = hist;
+  const { multiOrgInns, nameChangeInns, monopolyExecs } = globalMaps;
+  const flags = [];
+
+  // NO_INN — missing or wrong-length INN
+  const innDigits = (row.inn || '').replace(/\D/g, '');
+  if (!innDigits || (innDigits.length !== 10 && innDigits.length !== 12)) flags.push('NO_INN');
+
+  // MULTI_ORG
+  if (row.inn && multiOrgInns.has(row.inn)) flags.push('MULTI_ORG');
+
+  // NAME_CHANGE
+  if (row.inn && nameChangeInns.has(row.inn)) flags.push('NAME_CHANGE');
+
+  // EXCL_EXEC — only one executor across all periods where amount > 0, and risk is high
+  if (risk >= 2) {
+    const execs = new Set();
+    for (const sn of sortedSheetNames) {
+      const found = (allSheets[sn] || []).find(r => buildKey(r) === key);
+      if (found && found.amount > 0 && found.exec) execs.add(found.exec.trim().toLowerCase());
+    }
+    if (execs.size === 1 && row.exec) flags.push('EXCL_EXEC');
+  }
+
+  // EXEC_MONOPOLY
+  if (row.exec && monopolyExecs.has(row.exec)) flags.push('EXEC_MONOPOLY');
+
+  const nonzero = amounts.filter(v => v > 0);
+
+  // FROZEN — 3+ consecutive identical amounts (diff < 1 rub)
+  if (nonzero.length >= 3) {
+    let run = 1;
+    for (let i = 1; i < amounts.length; i++) {
+      if (amounts[i] > 0 && amounts[i - 1] > 0 && Math.abs(amounts[i] - amounts[i - 1]) < 1) {
+        run++;
+        if (run >= 3) { flags.push('FROZEN'); break; }
+      } else {
+        run = 1;
+      }
+    }
+  }
+
+  // CYCLE — went 0 then came back to ≥80% of previous peak within 1-2 periods
+  for (let i = 1; i < amounts.length; i++) {
+    if (amounts[i] === 0) {
+      const prevPeak = Math.max(...amounts.slice(0, i));
+      // Check next 1-2 periods
+      for (let j = i + 1; j <= Math.min(i + 2, amounts.length - 1); j++) {
+        if (amounts[j] >= 0.8 * prevPeak) { flags.push('CYCLE'); break; }
+      }
+      if (flags.includes('CYCLE')) break;
+    }
+  }
+
+  // JUMP — amount grew >100% in one period (among non-zero consecutive)
+  for (let i = 1; i < amounts.length; i++) {
+    if (amounts[i - 1] > 0 && amounts[i] > 2 * amounts[i - 1]) { flags.push('JUMP'); break; }
+  }
+
+  // ROUND — all non-zero amounts divisible by 100 000 with no kopeks
+  if (nonzero.length >= 2 && nonzero.every(v => Math.abs(v % 100000) < 0.01)) flags.push('ROUND');
+
+  return flags;
 }
 
 // =====================================================================
@@ -632,11 +756,14 @@ function calcRisk(h, amount) {
 // =====================================================================
 function buildTableData(sheetName) {
   const rows = allSheets[sheetName] || [];
+  const globalMaps = buildGlobalAnomalyMaps(sheetName, rows);
+
   return rows.map(row => {
-    const key  = buildKey(row);
-    const hist = traceHistory(key, sheetName);
-    const risk = calcRisk(hist, row.amount);
-    return { ...row, key, ...hist, risk };
+    const key      = buildKey(row);
+    const hist     = traceHistory(key, sheetName);
+    const risk     = calcRisk(hist);
+    const anomalies = detectAnomalies(row, hist, risk, key, globalMaps);
+    return { ...row, key, ...hist, risk, anomalies, anomalyCount: anomalies.length };
   });
 }
 
@@ -647,14 +774,18 @@ function setView(view) {
   currentView = view;
   document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + view)?.classList.add('active');
+
+  const isAnomaly = view === 'anomaly';
+  document.getElementById('anomalySection').style.display = isAnomaly ? '' : 'none';
   applyFilters();
 }
 
 function updateViewCounts() {
-  document.getElementById('cnt-all').textContent      = tableData.length;
-  document.getElementById('cnt-problem').textContent  = tableData.filter(r => r.risk >= 2).length;
-  document.getElementById('cnt-never').textContent    = tableData.filter(r => r.neverZero).length;
-  document.getElementById('cnt-ok').textContent       = tableData.filter(r => r.risk === 0).length;
+  document.getElementById('cnt-all').textContent     = tableData.length;
+  document.getElementById('cnt-problem').textContent = tableData.filter(r => r.risk >= 2).length;
+  document.getElementById('cnt-never').textContent   = tableData.filter(r => r.neverZero).length;
+  document.getElementById('cnt-ok').textContent      = tableData.filter(r => r.risk === 0).length;
+  document.getElementById('cnt-anomaly').textContent = tableData.filter(r => r.anomalyCount > 0).length;
 }
 
 // =====================================================================
@@ -668,29 +799,32 @@ function populateFilters() {
 }
 
 function resetFilters() {
-  ['fSearch','fAmtMin'].forEach(id => document.getElementById(id).value = '');
-  ['fOrg','fExec','fTrend'].forEach(id => document.getElementById(id).value = '');
+  ['fSearch', 'fAmtMin'].forEach(id => document.getElementById(id).value = '');
+  ['fOrg', 'fExec', 'fTrend', 'fAnomaly'].forEach(id => document.getElementById(id).value = '');
   applyFilters();
 }
 
 function applyFilters() {
-  const search = document.getElementById('fSearch').value.toLowerCase();
-  const org    = document.getElementById('fOrg').value;
-  const exec   = document.getElementById('fExec').value;
-  const trend  = document.getElementById('fTrend').value;
-  const amtMin = parseFloat(document.getElementById('fAmtMin').value) || 0;
+  const search  = document.getElementById('fSearch').value.toLowerCase();
+  const org     = document.getElementById('fOrg').value;
+  const exec    = document.getElementById('fExec').value;
+  const trend   = document.getElementById('fTrend').value;
+  const anomaly = document.getElementById('fAnomaly').value;
+  const amtMin  = parseFloat(document.getElementById('fAmtMin').value) || 0;
 
   let base = tableData;
   if (currentView === 'problem') base = tableData.filter(r => r.risk >= 2);
-  else if (currentView === 'never') base = tableData.filter(r => r.neverZero);
-  else if (currentView === 'ok')    base = tableData.filter(r => r.risk === 0);
+  else if (currentView === 'never')   base = tableData.filter(r => r.neverZero);
+  else if (currentView === 'ok')      base = tableData.filter(r => r.risk === 0);
+  else if (currentView === 'anomaly') base = tableData.filter(r => r.anomalyCount > 0);
 
   filteredData = base.filter(r => {
-    if (search && !r.name.toLowerCase().includes(search) && !r.inn.includes(search) && !r.org.toLowerCase().includes(search)) return false;
-    if (org   && r.org  !== org)   return false;
-    if (exec  && r.exec !== exec)  return false;
-    if (trend && r.trend !== trend) return false;
-    if (r.amount < amtMin)          return false;
+    if (search  && !r.name.toLowerCase().includes(search) && !r.inn.includes(search) && !r.org.toLowerCase().includes(search)) return false;
+    if (org     && r.org  !== org)   return false;
+    if (exec    && r.exec !== exec)  return false;
+    if (trend   && r.trend !== trend) return false;
+    if (anomaly && !r.anomalies.includes(anomaly)) return false;
+    if (r.amount < amtMin) return false;
     return true;
   });
 
@@ -698,6 +832,7 @@ function applyFilters() {
   sortData();
   renderCards();
   renderCharts();
+  if (currentView === 'anomaly') renderAnomalyCards();
   renderTable();
   renderPagination();
   updateViewCounts();
@@ -710,7 +845,7 @@ function sortBy(col) {
   if (sortCol === col) sortDir = -sortDir;
   else { sortCol = col; sortDir = -1; }
   sortData(); renderTable(); renderPagination();
-  document.querySelectorAll('thead th').forEach(th => th.classList.remove('sorted-asc','sorted-desc'));
+  document.querySelectorAll('thead th').forEach(th => th.classList.remove('sorted-asc', 'sorted-desc'));
   const th = document.querySelector('.th-' + col);
   if (th) th.classList.add(sortDir === -1 ? 'sorted-desc' : 'sorted-asc');
 }
@@ -720,9 +855,10 @@ function sortData() {
     let va, vb;
     if (sortCol === 'amount')         { va = a.amount; vb = b.amount; }
     else if (sortCol === 'risk')      { va = a.risk; vb = b.risk; }
+    else if (sortCol === 'anomalyCount') { va = a.anomalyCount; vb = b.anomalyCount; }
     else if (sortCol === 'continuousDays') { va = a.continuousDays; vb = b.continuousDays; }
-    else if (sortCol === 'trend')     { const o = {up:3,flat:2,volatile:1,down:0}; va = o[a.trend]||0; vb = o[b.trend]||0; }
-    else { va = (a[sortCol]||'').toLowerCase(); vb = (b[sortCol]||'').toLowerCase(); }
+    else if (sortCol === 'trend')     { const o = { up: 3, flat: 2, volatile: 1, down: 0 }; va = o[a.trend] || 0; vb = o[b.trend] || 0; }
+    else { va = (a[sortCol] || '').toLowerCase(); vb = (b[sortCol] || '').toLowerCase(); }
     return va < vb ? sortDir : va > vb ? -sortDir : 0;
   });
 }
@@ -741,14 +877,14 @@ function renderCards() {
   const neverSum  = neverRows.reduce((s, r) => s + r.amount, 0);
 
   const cardDefs = [
-    { cls: 'c-all',   label: 'Итого ДЗ',              amt: total,    cnt: filteredData.length, color: '#c8a84b', pct: 100 },
-    { cls: 'c-never', label: 'Никогда не гасили',      amt: neverSum, cnt: neverRows.length,   color: '#ef4444', pct: total ? neverSum/total*100 : 0 },
+    { cls: 'c-all',   label: 'Итого ДЗ',          amt: total,    cnt: filteredData.length,   color: '#c8a84b', pct: 100 },
+    { cls: 'c-never', label: 'Никогда не гасили',  amt: neverSum, cnt: neverRows.length,      color: '#ef4444', pct: total ? neverSum / total * 100 : 0 },
     ...riskGroups.filter(r => r.key > 0).map(r => ({
       cls: r.key === 3 ? 'c-never' : r.key === 2 ? 'c-long' : 'c-grow',
       label: r.label + ' риск', amt: r.sum, cnt: r.rows.length, color: r.color,
-      pct: total ? r.sum/total*100 : 0
+      pct: total ? r.sum / total * 100 : 0,
     })),
-    { cls: 'c-ok', label: 'Текущая (норма)', amt: riskGroups[3].sum, cnt: riskGroups[3].rows.length, color: '#22c55e', pct: total ? riskGroups[3].sum/total*100 : 0 },
+    { cls: 'c-ok', label: 'Текущая (норма)', amt: riskGroups[3].sum, cnt: riskGroups[3].rows.length, color: '#22c55e', pct: total ? riskGroups[3].sum / total * 100 : 0 },
   ];
 
   document.getElementById('cardsGrid').innerHTML = cardDefs.map(c => `
@@ -761,10 +897,31 @@ function renderCards() {
 }
 
 // =====================================================================
+// ANOMALY CARDS (shown in anomaly view)
+// =====================================================================
+function renderAnomalyCards() {
+  const total = filteredData.reduce((s, r) => s + r.amount, 0);
+  document.getElementById('anomalyCardsGrid').innerHTML = ANOMALY_DEFS.map(def => {
+    const rows = filteredData.filter(r => r.anomalies.includes(def.code));
+    const sum  = rows.reduce((s, r) => s + r.amount, 0);
+    const cls  = def.severity === 'high' ? 'c-anom-h' : 'c-anom-m';
+    const col  = def.severity === 'high' ? '#ef4444' : '#eab308';
+    const pct  = total ? sum / total * 100 : 0;
+    return `
+      <div class="card ${cls}" title="${esc(def.desc)}" style="cursor:pointer" onclick="document.getElementById('fAnomaly').value='${def.code}';applyFilters()">
+        <div class="label">${def.severity === 'high' ? '🔴' : '🟡'} ${def.label}</div>
+        <div class="amount">${rows.length} конт.</div>
+        <div class="count">${fmtAmt(sum)}</div>
+        <div class="desc">${esc(def.desc)}</div>
+        <div class="pct-bar"><div class="pct-fill" style="width:${pct.toFixed(1)}%;background:${col}"></div></div>
+      </div>`;
+  }).join('');
+}
+
+// =====================================================================
 // CHARTS
 // =====================================================================
 function renderCharts() {
-  // Pie: by risk
   const riskData = RISK.map(rv => ({
     label: rv.label,
     sum: filteredData.filter(r => r.risk === rv.key).reduce((s, r) => s + r.amount, 0),
@@ -787,21 +944,30 @@ function renderCharts() {
     }
   });
 
-  // Bar: top 15 problem debtors
-  const problem = filteredData.filter(r => r.risk >= 1)
-    .sort((a, b) => b.amount - a.amount).slice(0, 15);
-  const barColors = problem.map(r => RISK[3 - r.risk]?.color || '#7a9ab5');
+  const isAnomaly = currentView === 'anomaly';
+  let barRows, barColors, barTitle;
+
+  if (isAnomaly) {
+    // Top 15 by anomaly count, then by amount
+    barRows = [...filteredData].sort((a, b) => b.anomalyCount - a.anomalyCount || b.amount - a.amount).slice(0, 15);
+    barColors = barRows.map(() => '#ef4444');
+    barTitle = 'ТОП-15 контрагентов с аномалиями';
+  } else {
+    barRows = filteredData.filter(r => r.risk >= 1).sort((a, b) => b.amount - a.amount).slice(0, 15);
+    barColors = barRows.map(r => RISK.find(x => x.key === r.risk)?.color || '#7a9ab5');
+    barTitle = 'ТОП-15 подозрительных контрагентов';
+  }
+  document.getElementById('barChartTitle').textContent = barTitle;
 
   if (barInst) barInst.destroy();
   barInst = new Chart(document.getElementById('barChart').getContext('2d'), {
     type: 'bar',
     data: {
-      labels: problem.map(r => (r.name || r.inn || '?').slice(0, 30)),
-      datasets: [{ data: problem.map(r => r.amount), backgroundColor: barColors.map(c => c + '99'), borderColor: barColors, borderWidth: 1, borderRadius: 4 }]
+      labels: barRows.map(r => (r.name || r.inn || '?').slice(0, 32)),
+      datasets: [{ data: barRows.map(r => r.amount), backgroundColor: barColors.map(c => c + '99'), borderColor: barColors, borderWidth: 1, borderRadius: 4 }]
     },
     options: {
-      indexAxis: 'y', responsive: true,
-      maintainAspectRatio: false,
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${fmtAmt(ctx.raw)}` } } },
       scales: {
         x: { ticks: { color: '#7a9ab5', callback: v => fmtShort(v) }, grid: { color: '#1e3045' } },
@@ -814,31 +980,44 @@ function renderCharts() {
 // =====================================================================
 // TABLE
 // =====================================================================
-const TREND_LABEL = { up: '<span class="trend-up">Растёт ↑</span>', down: '<span class="trend-down">Снижается ↓</span>', flat: '<span class="trend-flat">Стоит 〰</span>', volatile: '<span class="trend-vol">Волатильная ↕</span>' };
+const TREND_LABEL = {
+  up:       '<span class="trend-up">Растёт ↑</span>',
+  down:     '<span class="trend-down">Снижается ↓</span>',
+  flat:     '<span class="trend-flat">Стоит 〰</span>',
+  volatile: '<span class="trend-vol">Волатильная ↕</span>',
+};
 
 function renderTable() {
   const start = (currentPage - 1) * pageSize;
   const slice = filteredData.slice(start, start + pageSize);
   const search = document.getElementById('fSearch').value.toLowerCase();
 
-  document.getElementById('tableCount').textContent =
-    `Показано ${slice.length} из ${filteredData.length} записей`;
+  document.getElementById('tableCount').textContent = `Показано ${slice.length} из ${filteredData.length} записей`;
 
   const tbody = document.getElementById('tableBody');
   if (!slice.length) {
-    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Нет данных по заданным фильтрам</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Нет данных по заданным фильтрам</td></tr>';
     return;
   }
 
   tbody.innerHTML = slice.map(r => {
-    const rv = RISK[3 - r.risk] || RISK[3];  // RISK[0]=critical, need reverse
     const riskObj = RISK.find(x => x.key === r.risk) || RISK[3];
     const hl = s => search && s.toLowerCase().includes(search)
       ? s.replace(new RegExp(`(${escRe(search)})`, 'gi'), '<mark class="highlight">$1</mark>') : esc(s);
 
-    const spark = buildSpark(r);
+    const spark    = buildSpark(r);
     const neverTag = r.neverZero ? '<br><span class="never-flag">НЕ ГАСИЛИ</span>' : '';
-    const daysStr = r.continuousDays === 0 ? 'новая' : `${r.continuousDays} дн.`;
+    const daysStr  = r.continuousDays === 0 ? 'новая' : `${r.continuousDays} дн.`;
+
+    const anomBadges = r.anomalies.map(code => {
+      const def = ANOMALY_MAP[code];
+      if (!def) return '';
+      const cls = def.severity === 'high' ? 'anom-high' : 'anom-medium';
+      return `<span class="anom-badge ${cls}" title="${esc(def.desc)}">${esc(def.label)}</span>`;
+    }).join('');
+    const anomCell = r.anomalies.length
+      ? `<div class="anom-wrap">${anomBadges}</div>`
+      : '<span style="color:#3a5a7a;font-size:11px">—</span>';
 
     return `<tr>
       <td><div class="org-tag" title="${esc(r.org)}">${hl(r.org)}</div></td>
@@ -846,6 +1025,7 @@ function renderTable() {
       <td><span class="inn-text">${hl(r.inn)}</span></td>
       <td class="num bold">${fmtAmt(r.amount)}</td>
       <td><span class="risk-badge ${riskObj.cls}">${riskObj.label}</span></td>
+      <td>${anomCell}</td>
       <td class="num" style="color:${r.continuousDays > 90 ? '#ef4444' : '#7a9ab5'}">${daysStr}</td>
       <td>${spark}</td>
       <td>${TREND_LABEL[r.trend] || ''}</td>
@@ -854,7 +1034,9 @@ function renderTable() {
   }).join('');
 }
 
-// numeric id -> {amounts, risk} — avoids any HTML-escaping issues
+// =====================================================================
+// SPARKLINES
+// =====================================================================
 const sparkData = {};
 let sparkSeq = 0;
 
@@ -874,7 +1056,6 @@ function buildSpark(row) {
     const h = Math.max(3, Math.round(v / max * 30));
     const zeroCls = v === 0 ? ' zero-col' : '';
     const sn = sortedSheetNames[i] || '';
-    // .spark-col is full container height → hover works even above visible bar
     return `<div class="spark-col${zeroCls}" data-sid="${sid}" data-i="${i}" title="${esc(sn)}: ${fmtAmt(v)} ₽">
       <div class="spark-bar-vis" style="height:${h}px;background:${col}"></div>
     </div>`;
@@ -882,7 +1063,6 @@ function buildSpark(row) {
   return `<div class="spark">${bars.join('')}</div>`;
 }
 
-// Event delegation — full-height column captures hover above the visible bar
 document.addEventListener('mouseover', e => {
   const col = e.target.closest('.spark-col');
   if (!col) return;
@@ -900,80 +1080,46 @@ function showSparkTip(e, sid, idx) {
   const { amounts, risk } = d;
   const amt  = amounts[idx];
   const prev = idx > 0 ? amounts[idx - 1] : null;
-
   const sn   = sortedSheetNames[idx] || '';
   const date = sheetDates[sn];
-  const dateStr = date
-    ? date.toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' })
-    : sn;
+  const dateStr = date ? date.toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' }) : sn;
 
   const COLORS = { 3: '#ef4444', 2: '#f97316', 1: '#eab308', 0: '#22c55e' };
   const col = COLORS[risk] || '#7a9ab5';
 
-  // Amount line
   document.getElementById('tipPeriod').textContent = dateStr;
   const amtEl = document.getElementById('tipAmount');
-  if (amt === 0) {
-    amtEl.textContent = '— погашено —';
-    amtEl.style.color = '#22c55e';
-    amtEl.style.fontSize = '18px';
-  } else {
-    amtEl.textContent = fmtAmt(amt) + ' ₽';
-    amtEl.style.color = '#e0e6f0';
-    amtEl.style.fontSize = '24px';
-  }
+  if (amt === 0) { amtEl.textContent = '— погашено —'; amtEl.style.color = '#22c55e'; amtEl.style.fontSize = '18px'; }
+  else           { amtEl.textContent = fmtAmt(amt) + ' ₽'; amtEl.style.color = '#e0e6f0'; amtEl.style.fontSize = '24px'; }
 
-  // Delta vs previous period
   const deltaEl = document.getElementById('tipDelta');
-  if (prev === null) {
-    deltaEl.textContent = '';
-    deltaEl.className = 'tip-delta flat';
-  } else if (amt === 0 && prev > 0) {
-    deltaEl.innerHTML = '✓ &nbsp;Долг погашен в этом периоде';
-    deltaEl.className = 'tip-delta zero';
-  } else if (amt > 0 && prev === 0) {
-    deltaEl.innerHTML = '⚡ &nbsp;Долг появился заново';
-    deltaEl.className = 'tip-delta new';
-  } else if (Math.abs(amt - prev) < 1) {
-    deltaEl.innerHTML = '= &nbsp;Без изменений';
-    deltaEl.className = 'tip-delta flat';
-  } else {
-    const diff = amt - prev;
-    const pct  = prev > 0 ? diff / prev * 100 : 0;
-    const sign = diff > 0 ? '+' : '';
-    const arrow = diff > 0 ? '▲' : '▼';
+  if (prev === null)              { deltaEl.textContent = ''; deltaEl.className = 'tip-delta flat'; }
+  else if (amt === 0 && prev > 0) { deltaEl.innerHTML = '✓ &nbsp;Долг погашен в этом периоде'; deltaEl.className = 'tip-delta zero'; }
+  else if (amt > 0 && prev === 0) { deltaEl.innerHTML = '⚡ &nbsp;Долг появился заново'; deltaEl.className = 'tip-delta new'; }
+  else if (Math.abs(amt - prev) < 1) { deltaEl.innerHTML = '= &nbsp;Без изменений'; deltaEl.className = 'tip-delta flat'; }
+  else {
+    const diff = amt - prev, pct = prev > 0 ? diff / prev * 100 : 0, sign = diff > 0 ? '+' : '', arrow = diff > 0 ? '▲' : '▼';
     deltaEl.innerHTML = `${arrow} &nbsp;${sign}${fmtAmt(diff)} &nbsp;<span style="font-size:13px;opacity:0.7">(${sign}${pct.toFixed(1)}%)</span>`;
     deltaEl.className = 'tip-delta ' + (diff > 0 ? 'up' : 'down');
   }
 
-  // Mini bar chart — all periods, active one highlighted
   const max = Math.max(...amounts);
   document.getElementById('tipMini').innerHTML = amounts.map((v, i) => {
     const h = max > 0 ? Math.max(2, Math.round(v / max * 24)) : 2;
-    const active = i === idx ? ' active' : '';
-    const op = v === 0 ? '0.15' : '1';
-    return `<div class="tip-mini-bar${active}" style="width:8px;height:${h}px;background:${col};opacity:${op}"></div>`;
+    return `<div class="tip-mini-bar${i === idx ? ' active' : ''}" style="width:8px;height:${h}px;background:${col};opacity:${v === 0 ? 0.15 : 1}"></div>`;
   }).join('');
+  document.getElementById('tipFoot').textContent = `Период ${idx + 1} из ${amounts.length}`;
 
-  document.getElementById('tipFoot').textContent =
-    `Период ${idx + 1} из ${amounts.length}`;
-
-  // Position
   const tip = document.getElementById('sparkTip');
-  tip.style.visibility = 'hidden';
-  tip.classList.add('visible');
+  tip.style.visibility = 'hidden'; tip.classList.add('visible');
   const tw = tip.offsetWidth, th = tip.offsetHeight;
   let x = e.clientX + 18, y = e.clientY - th - 14;
   if (x + tw > window.innerWidth - 12) x = e.clientX - tw - 18;
   if (y < 8) y = e.clientY + 20;
-  tip.style.left = x + 'px';
-  tip.style.top  = y + 'px';
-  tip.style.visibility = '';
+  tip.style.left = x + 'px'; tip.style.top = y + 'px'; tip.style.visibility = '';
 }
 
-function hideSparkTip() {
-  document.getElementById('sparkTip').classList.remove('visible');
-}
+function hideSparkTip() { document.getElementById('sparkTip').classList.remove('visible'); }
 
 // =====================================================================
 // PAGINATION
@@ -982,21 +1128,21 @@ function renderPagination() {
   const total = Math.ceil(filteredData.length / pageSize);
   const pg = document.getElementById('pagination');
   if (total <= 1) { pg.innerHTML = ''; return; }
-  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>&#8249;</button>`;
+  let html = `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>&#8249;</button>`;
   pageRange(currentPage, total).forEach(p => {
     if (p === '…') html += `<span style="color:#4a7a9b;padding:0 4px">…</span>`;
-    else html += `<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+    else html += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`;
   });
-  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>&#8250;</button>`;
+  html += `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage === total ? 'disabled' : ''}>&#8250;</button>`;
   html += `<span style="margin-left:8px">${currentPage}/${total}</span>`;
   pg.innerHTML = html;
 }
 function pageRange(cur, total) {
-  if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
   const r = [];
   if (cur > 3) { r.push(1); if (cur > 4) r.push('…'); }
-  for (let p = Math.max(1, cur-2); p <= Math.min(total, cur+2); p++) r.push(p);
-  if (cur < total-2) { if (cur < total-3) r.push('…'); r.push(total); }
+  for (let p = Math.max(1, cur - 2); p <= Math.min(total, cur + 2); p++) r.push(p);
+  if (cur < total - 2) { if (cur < total - 3) r.push('…'); r.push(total); }
   return r;
 }
 function goPage(p) {
@@ -1014,20 +1160,21 @@ function changePageSize() {
 // =====================================================================
 function exportCSV() {
   const bom = '﻿';
-  const h = ['Организация','Контрагент','ИНН','Сумма ДЗ','Уровень риска','Непрерывно дней','Никогда не гасили','Тренд','Исполнитель'];
+  const h = ['Организация', 'Контрагент', 'ИНН', 'Сумма ДЗ', 'Уровень риска', 'Аномалии', 'Непрерывно дней', 'Никогда не гасили', 'Тренд', 'Исполнитель'];
   const rows = filteredData.map(r => [
     r.org, r.name, r.inn,
     r.amount.toFixed(2).replace('.', ','),
     RISK.find(x => x.key === r.risk)?.label || '',
+    r.anomalies.map(code => ANOMALY_MAP[code]?.label || code).join(', '),
     r.continuousDays,
     r.neverZero ? 'ДА' : 'нет',
     { up: 'Растёт', down: 'Снижается', flat: 'Стоит', volatile: 'Волатильная' }[r.trend] || '',
-    r.exec
-  ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(';'));
+    r.exec,
+  ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(';'));
   const blob = new Blob([bom + h.join(';') + '\n' + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'ДЗ_анализ_невозвратной.csv';
+  a.download = 'ДЗ_анализ_СБ.csv';
   a.click();
 }
 
@@ -1035,9 +1182,9 @@ function exportCSV() {
 // UTILS
 // =====================================================================
 function fmtAmt(n)   { return new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n || 0); }
-function fmtShort(n) { if (n >= 1e9) return (n/1e9).toFixed(1)+'млрд'; if (n >= 1e6) return (n/1e6).toFixed(1)+'млн'; if (n >= 1e3) return (n/1e3).toFixed(0)+'тыс'; return n; }
-function fmtDate(d)  { return d ? d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'2-digit' }) : ''; }
-function esc(s)      { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtShort(n) { if (n >= 1e9) return (n / 1e9).toFixed(1) + 'млрд'; if (n >= 1e6) return (n / 1e6).toFixed(1) + 'млн'; if (n >= 1e3) return (n / 1e3).toFixed(0) + 'тыс'; return n; }
+function fmtDate(d)  { return d ? d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' }) : ''; }
+function esc(s)      { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 function escRe(s)    { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 </script>
 </body>
