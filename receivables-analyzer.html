@@ -159,14 +159,51 @@
   .risk-medium   { background: #eab30822; color: #eab308; border: 1px solid #eab30844; }
   .risk-low      { background: #22c55e22; color: #22c55e; border: 1px solid #22c55e44; }
 
-  /* Anomaly badges */
-  .anom-wrap { display: flex; flex-wrap: wrap; gap: 3px; max-width: 180px; }
+  /* Anomaly badges (used in popup) */
   .anom-badge {
     display: inline-block; padding: 2px 6px; border-radius: 6px;
     font-size: 10px; font-weight: 700; white-space: nowrap; cursor: default;
   }
   .anom-high   { background: #ef444418; color: #ef4444; border: 1px solid #ef444440; }
   .anom-medium { background: #eab30818; color: #eab308; border: 1px solid #eab30840; }
+
+  /* Anomaly indicator button in table */
+  .anom-indicator {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 10px; font-size: 11px; font-weight: 700;
+    cursor: pointer; white-space: nowrap; transition: filter 0.15s, transform 0.15s;
+  }
+  .anom-indicator.sev-high   { background: #ef444422; color: #ef4444; border: 1px solid #ef444444; }
+  .anom-indicator.sev-medium { background: #eab30822; color: #eab308; border: 1px solid #eab30844; }
+  .anom-indicator:hover { filter: brightness(1.35); transform: scale(1.06); }
+
+  /* Anomaly popup */
+  #anomalyPopup {
+    position: fixed; z-index: 9998;
+    display: none;
+    background: #0d1923; border: 1px solid #2a5070;
+    border-radius: 12px; min-width: 300px; max-width: 440px;
+    box-shadow: 0 14px 44px #00000099; overflow: hidden;
+  }
+  #anomalyPopup.ap-visible { display: block; }
+  .ap-header {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+    padding: 14px 16px 12px; border-bottom: 1px solid #1e3045;
+  }
+  .ap-title { font-size: 11px; color: #7a9ab5; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .ap-name  { font-size: 14px; font-weight: 600; color: #e0e6f0; word-break: break-word; }
+  .ap-close {
+    background: none; border: none; color: #7a9ab5; font-size: 22px;
+    cursor: pointer; padding: 0 2px; line-height: 1; flex-shrink: 0; margin-top: -2px;
+  }
+  .ap-close:hover { color: #e0e6f0; }
+  .ap-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .ap-anom-item {
+    padding: 9px 12px; background: #111e2a; border-radius: 8px;
+    border: 1px solid #1e3045; display: flex; flex-direction: column; gap: 5px;
+  }
+  .ap-anom-top  { display: flex; align-items: center; gap: 8px; }
+  .ap-anom-desc { font-size: 11px; color: #4a7a9b; line-height: 1.5; }
 
   /* Trend */
   .trend-up  { color: #ef4444; font-weight: 700; }
@@ -397,6 +434,8 @@
   <div class="tip-mini"   id="tipMini"></div>
   <div class="tip-foot"   id="tipFoot"></div>
 </div>
+
+<div id="anomalyPopup"></div>
 
 <script>
 // =====================================================================
@@ -1037,15 +1076,18 @@ function renderTable() {
     const neverTag = r.neverZero ? '<br><span class="never-flag">НЕ ГАСИЛИ</span>' : '';
     const daysStr  = r.continuousDays === 0 ? 'новая' : `${r.continuousDays} дн.`;
 
-    const anomBadges = r.anomalies.map(code => {
-      const def = ANOMALY_MAP[code];
-      if (!def) return '';
-      const cls = def.severity === 'high' ? 'anom-high' : 'anom-medium';
-      return `<span class="anom-badge ${cls}" title="${esc(def.desc)}">${esc(def.label)}</span>`;
-    }).join('');
-    const anomCell = r.anomalies.length
-      ? `<div class="anom-wrap">${anomBadges}</div>`
-      : '<span style="color:#3a5a7a;font-size:11px">—</span>';
+    const anomCell = (() => {
+      if (!r.anomalies.length) return '<span style="color:#3a5a7a;font-size:11px">—</span>';
+      const hasHigh = r.anomalies.some(c => ANOMALY_MAP[c]?.severity === 'high');
+      const sevCls  = hasHigh ? 'sev-high' : 'sev-medium';
+      const n = r.anomalies.length;
+      const word = n === 1 ? 'аномалия' : n < 5 ? 'аномалии' : 'аномалий';
+      return `<button class="anom-indicator ${sevCls}"
+        data-anom-name="${esc(r.name)}"
+        data-anom-codes="${r.anomalies.join(',')}"
+        title="Показать ${n} ${word}"
+        onclick="showAnomalyPopup(event,this)">&#9888; ${n}</button>`;
+    })();
 
     return `<tr>
       <td><div class="org-tag" title="${esc(r.org)}">${hl(r.org)}</div></td>
@@ -1205,6 +1247,73 @@ function exportCSV() {
   a.download = 'ДЗ_анализ_СБ.csv';
   a.click();
 }
+
+// =====================================================================
+// ANOMALY POPUP
+// =====================================================================
+function showAnomalyPopup(e, btn) {
+  e.stopPropagation();
+  const name  = btn.dataset.anomName;
+  const codes = (btn.dataset.anomCodes || '').split(',').filter(Boolean);
+
+  const items = codes.map(code => {
+    const def = ANOMALY_MAP[code];
+    if (!def) return '';
+    const badgeCls = def.severity === 'high' ? 'anom-high' : 'anom-medium';
+    const sevColor = def.severity === 'high' ? '#ef4444' : '#eab308';
+    const sevLabel = def.severity === 'high' ? '🔴 Высокая угроза' : '🟡 Средняя угроза';
+    return `<div class="ap-anom-item">
+      <div class="ap-anom-top">
+        <span class="anom-badge ${badgeCls}">${esc(def.label)}</span>
+        <span style="font-size:11px;color:${sevColor}">${sevLabel}</span>
+      </div>
+      <div class="ap-anom-desc">${esc(def.desc)}</div>
+    </div>`;
+  }).join('');
+
+  const n = codes.length;
+  const countWord = n === 1 ? '1 признак' : n < 5 ? `${n} признака` : `${n} признаков`;
+
+  const popup = document.getElementById('anomalyPopup');
+  popup.innerHTML = `
+    <div class="ap-header">
+      <div style="min-width:0">
+        <div class="ap-title">Аномалии СБ &mdash; ${countWord}</div>
+        <div class="ap-name" title="${esc(name)}">${esc(name)}</div>
+      </div>
+      <button class="ap-close" onclick="closeAnomalyPopup()" title="Закрыть">&#215;</button>
+    </div>
+    <div class="ap-body">${items}</div>`;
+
+  popup.classList.add('ap-visible');
+
+  // Position next to the button, avoiding viewport edges
+  const rect = btn.getBoundingClientRect();
+  const pw = 440;
+  const ph = Math.min(popup.scrollHeight + 40, window.innerHeight - 24);
+  let x = rect.right + 10;
+  let y = rect.top;
+  if (x + pw > window.innerWidth - 12) x = rect.left - pw - 10;
+  if (x < 8) x = 8;
+  if (y + ph > window.innerHeight - 12) y = window.innerHeight - ph - 12;
+  if (y < 8) y = 8;
+  popup.style.left = x + 'px';
+  popup.style.top  = y + 'px';
+}
+
+function closeAnomalyPopup() {
+  document.getElementById('anomalyPopup').classList.remove('ap-visible');
+}
+
+document.addEventListener('click', e => {
+  const popup = document.getElementById('anomalyPopup');
+  if (popup && popup.classList.contains('ap-visible')
+      && !popup.contains(e.target)
+      && !e.target.closest('.anom-indicator')) {
+    closeAnomalyPopup();
+  }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAnomalyPopup(); });
 
 // =====================================================================
 // UTILS
