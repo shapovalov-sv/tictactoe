@@ -845,33 +845,46 @@ function renderTable() {
   }).join('');
 }
 
-// key -> {amounts, risk} for tooltip lookup
+// numeric id -> {amounts, risk} — avoids any HTML-escaping issues
 const sparkData = {};
+let sparkSeq = 0;
 
 function buildSpark(row) {
-  const { amounts, risk, key } = row;
+  const { amounts, risk } = row;
   if (!amounts || amounts.length < 2) return '<span style="color:#4a7a9b;font-size:11px">—</span>';
   const max = Math.max(...amounts);
   if (max === 0) return '<span style="color:#4a7a9b;font-size:11px">—</span>';
 
-  sparkData[key] = { amounts, risk };
+  const sid = sparkSeq++;
+  sparkData[sid] = { amounts, risk };
 
   const COLORS = { 3: '#ef4444', 2: '#f97316', 1: '#eab308', 0: '#22c55e' };
   const col = COLORS[risk] || '#7a9ab5';
-  const safeKey = key.replace(/'/g, "\\'");
 
   const bars = amounts.map((v, i) => {
     const h = Math.max(3, Math.round(v / max * 30));
     const cls = v === 0 ? ' zero-bar' : '';
+    const sn = sortedSheetNames[i] || '';
+    // title = browser fallback tooltip (always works)
     return `<div class="spark-bar${cls}" style="height:${h}px;background:${col}"
-      onmouseenter="showSparkTip(event,'${safeKey}',${i})"
-      onmouseleave="hideSparkTip()"></div>`;
+      data-sid="${sid}" data-i="${i}" title="${esc(sn)}: ${fmtAmt(v)} ₽"></div>`;
   });
   return `<div class="spark">${bars.join('')}</div>`;
 }
 
-function showSparkTip(e, key, idx) {
-  const d = sparkData[key];
+// Event delegation — no inline handlers, no escaping problems
+document.addEventListener('mouseover', e => {
+  const bar = e.target;
+  if (!bar.classList.contains('spark-bar')) return;
+  showSparkTip(e, +bar.dataset.sid, +bar.dataset.i);
+});
+document.addEventListener('mouseout', e => {
+  if (!e.target.classList.contains('spark-bar')) return;
+  hideSparkTip();
+});
+
+function showSparkTip(e, sid, idx) {
+  const d = sparkData[sid];
   if (!d) return;
   const { amounts, risk } = d;
   const amt  = amounts[idx];
